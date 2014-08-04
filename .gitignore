@@ -2,5 +2,7 @@
 data
 draft
 
+*.rda
 *.Rproj
 *.pdf
+.Rproj.user
