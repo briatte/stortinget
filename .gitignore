@@ -2,6 +2,7 @@
 data
 draft
 
+*.csv
 *.rda
 *.Rproj
 *.pdf

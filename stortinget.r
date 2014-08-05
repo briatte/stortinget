@@ -129,15 +129,39 @@ for(k in rev(m)) {
   
 }
 
+if(!file.exists("representanter.csv")) {
+  dd = data.frame()
+} else {
+  dd = read.csv("representanter.csv")
+}
+
+# get gender from XML listing
+for(ii in rev(na.omit(m[ !grepl("_", m) & !m %in% dd$uid ]))) {
+  cat(which(ii == m), "Finding gender of MP", ii, "\n")
+  hh = xmlToList(paste0("http://data.stortinget.no/eksport/person?personid=", ii))
+  dd = rbind(dd, cbind(hh[ grepl("id", names(hh)) ],
+                       hh[ grepl("kjoenn", names(unlist(hh))) ]))
+}
+dd = unique(dd)
+names(dd) = c("uid", "sex2")
+dd$uid = toupper(dd$uid)
+dd$sex2 = as.character(dd$sex2)
+
+write.csv(dd, "representanter.csv", row.names = FALSE)
+
+s = merge(s, dd, by = "uid")
+s$sex[ is.na(s$sex) & s$sex2 == "kvinne" ] = "Datter"
+s$sex[ is.na(s$sex) & s$sex2 == "mann" ] = "Sønn"
+
+# missing gender
+table(gsub("(.*), (.*)", "\\2", s$name[is.na(s$sex)]))
+
 s$fullname = gsub("(.*), (.*)", "\\2 \\1", s$name)
 s$party[ grepl("Kystpartiet", s$party) ] = "Kystpartiet"
 s$party[ grepl("Uavhengig", s$party) ] = "Independent"
 s$county = gsub(" for |\\s$", "", s$county)
 s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
   as.numeric(as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\2", s$seniority)) > 365 / 2)
-
-# missing gender
-table(gsub("(.*), (.*)", "\\2", s$name[is.na(s$sex)]))
 
 a$n_au = 1 + str_count(a$url, ";")
 
