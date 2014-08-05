@@ -118,11 +118,12 @@ for(k in rev(m)) {
   seniority = xpathSApply(h, "//span[@id='ctl00_MainRegion_RepShortInfo_lblSeniority']", xmlValue)
   born = xpathSApply(h, "//span[@id='ctl00_MainRegion_RepShortInfo_lblBirthDate']", xmlValue)
   photo = xpathSApply(h, "//img[@id='ctl00_MainRegion_RepShortInfo_imgRepresentative']/@src")
-
-  cat("Sponsor", sprintf("%3.0f", which(m == k)), name, "\n")
+  sex = str_extract(xpathSApply(h, "//div[@class='mainbody'][2]", xmlValue), "Datter|Sønn")
+    
+  cat("Sponsor", sprintf("%3.0f", which(m == k)), name, sex, "\n")
 
   s = rbind(s, data.frame(uid = gsub("^data/rep|\\.html$", "", file),
-                          name, party, type, county, mandate, seniority, born,
+                          name, party, type, county, mandate, seniority, born, sex, 
                           photo,
                           stringsAsFactors = FALSE))
   
@@ -132,6 +133,11 @@ s$fullname = gsub("(.*), (.*)", "\\2 \\1", s$name)
 s$party[ grepl("Kystpartiet", s$party) ] = "Kystpartiet"
 s$party[ grepl("Uavhengig", s$party) ] = "Independent"
 s$county = gsub(" for |\\s$", "", s$county)
+s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
+  as.numeric(as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\2", s$seniority)) > 365 / 2)
+
+# missing gender
+table(gsub("(.*), (.*)", "\\2", s$name[is.na(s$sex)]))
 
 a$n_au = 1 + str_count(a$url, ";")
 
