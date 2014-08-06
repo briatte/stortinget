@@ -1,5 +1,7 @@
 # hi Norway
 
+dir.create("data", showWarnings = FALSE)
+
 library(downloader) # to handle https
 library(GGally)
 library(network)
