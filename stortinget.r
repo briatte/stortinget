@@ -1,13 +1,15 @@
-library(downloader)
+# hi Norway
+
+library(downloader) # to handle https
+library(GGally)
 library(network)
 library(XML)
 library(stringr)
 library(tnet)
-library(GGally)
 library(rgexf)
 
-plot = FALSE
-gexf = FALSE
+plot = FALSE # set to TRUE to save as .pdf
+gexf = FALSE # set to TRUE to save as .gexf
 
 colors = c(
   "Sosialistisk Venstreparti" = "#E41A1C", # Left party, red
@@ -25,9 +27,8 @@ order = names(colors)
 
 root = "https://www.stortinget.no"
 years = paste0(1998:2013, "-", 1999:2014)
-# years = gsub("index|\\.html$", "", dir("data", pattern = "index"))
 
-# dossiers
+# get bills
 
 a = data.frame()
 pass = TRUE
@@ -92,12 +93,14 @@ for(i in years) {
   
 }
 
-# sponsors
+# get sponsors
 
 a$url = gsub("/no/Representanter-og-komiteer/Representantene/Representantfordeling/Representant/\\?perid=", "", a$url)
 
 m = unique(unlist(strsplit(a$url, ";")))
 s = data.frame()
+
+cat("Found", nrow(a), "documents", sum(a$n_au > 1), "cosponsored", length(m), "unique sponsors\n")
 
 for(k in rev(m)) {
   
@@ -105,7 +108,8 @@ for(k in rev(m)) {
   
   if(!file.exists(file))
     download(paste0(root,
-                    "/no/Representanter-og-komiteer/Representantene/Representantfordeling/Representant/?perid=", k),
+                    "/no/Representanter-og-komiteer/Representantene/Representantfordeling/Representant/?perid=",
+                    gsub("Æ", "%C3%86", gsub("Å", "%C3%85", gsub("Ø", "%C3%98", k)))),
              file, mode = "wb", quiet = TRUE)
   
   h = htmlParse(file)
@@ -118,9 +122,10 @@ for(k in rev(m)) {
   seniority = xpathSApply(h, "//span[@id='ctl00_MainRegion_RepShortInfo_lblSeniority']", xmlValue)
   born = xpathSApply(h, "//span[@id='ctl00_MainRegion_RepShortInfo_lblBirthDate']", xmlValue)
   photo = xpathSApply(h, "//img[@id='ctl00_MainRegion_RepShortInfo_imgRepresentative']/@src")
-  sex = str_extract(xpathSApply(h, "//div[@class='mainbody'][2]", xmlValue), "Datter|Sønn")
+  sex = xpathSApply(h, "//div[@class='mainbody'][2]", xmlValue)
+  sex = ifelse(length(sex), str_extract(sex, "Datter|Sønn"), NA)
     
-  cat("Sponsor", sprintf("%3.0f", which(m == k)), name, sex, "\n")
+  cat("Sponsor", sprintf("%3.0f", which(m == k)), k, name, sex, "\n")
 
   s = rbind(s, data.frame(uid = gsub("^data/rep|\\.html$", "", file),
                           name, party, type, county, mandate, seniority, born, sex, 
@@ -136,7 +141,7 @@ if(!file.exists("representanter.csv")) {
 }
 
 # get gender from XML listing
-for(ii in rev(na.omit(m[ !grepl("_", m) & !m %in% dd$uid ]))) {
+for(ii in rev(na.omit(m[ !grepl("_", m) & !m %in% dd$uid & m != "NA" ]))) {
   cat(which(ii == m), "Finding gender of MP", ii, "\n")
   hh = xmlToList(paste0("http://data.stortinget.no/eksport/person?personid=", ii))
   dd = rbind(dd, cbind(hh[ grepl("id", names(hh)) ],
@@ -149,19 +154,27 @@ dd$sex2 = as.character(dd$sex2)
 
 write.csv(dd, "representanter.csv", row.names = FALSE)
 
+# prepare sponsors
+
 s = merge(s, dd, by = "uid")
-s$sex[ is.na(s$sex) & s$sex2 == "kvinne" ] = "Datter"
-s$sex[ is.na(s$sex) & s$sex2 == "mann" ] = "Sønn"
+s$sex[ s$sex == "Datter" | s$sex2 == "kvinne" ] = "F"
+s$sex[ s$sex == "Sønn" | s$sex2 == "mann" ] = "M"
 
-# missing gender
-table(gsub("(.*), (.*)", "\\2", s$name[is.na(s$sex)]))
+# if missing gender
+# table(gsub("(.*), (.*)", "\\2", s$name[is.na(s$sex)]))
 
-s$fullname = gsub("(.*), (.*)", "\\2 \\1", s$name)
+s$born = as.numeric(substr(s$born, 1, 4))
+s$name = gsub("(.*), (.*)", "\\2 \\1", s$name)
 s$party[ grepl("Kystpartiet", s$party) ] = "Kystpartiet"
 s$party[ grepl("Uavhengig", s$party) ] = "Independent"
 s$county = gsub(" for |\\s$", "", s$county)
 s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
   as.numeric(as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\2", s$seniority)) > 365 / 2)
+s$photo = gsub("/Personimages/PersonImages_Large/|_stort\\.jpg", "", s$photo)
+
+s = s[, c("uid", "name", "born", "sex", "party", "nyears", "type", "county", "mandate", "photo") ]
+
+# prepare bills
 
 a$n_au = 1 + str_count(a$url, ";")
 
@@ -175,20 +188,26 @@ a$kwd = gsub("Særavgifter", "Skatter", a$kwd)  # border and domestic taxation
 a$kwd = gsub("Vegtrafikk", "Vegvesen", a$kwd) # roads and traffic
 a$kwd = gsub(" og påtalemyndighet| og konkurranseforhold", "", a$kwd)
 
+# splits (legislatures and themes)
+
 t = table(unlist(strsplit(a$kwd, ";")))
 t = t[ t >= quantile(t, .9) ]
+t = c(seq(1997, 2009, 4), names(t))
 
-for(ii in unique(names(t))) {
+for(ii in unique(t)) {
   
   cat(ii)
-  data = subset(a, grepl(ii, kwd) & n_au > 1)
+  if(grepl("\\d{4}", ii))
+    data = subset(a, legislature == ii & n_au > 1)
+  else
+    data = subset(a, grepl(ii, kwd) & n_au > 1)
 
   cat(":", nrow(data), "cosponsored documents, ")
   
   edges = lapply(unique(data$url), function(d) {
     
     d = unlist(strsplit(d, ";"))
-    d = s$fullname[ s$uid %in% d ]
+    d = s$name[ s$uid %in% d ]
     d = expand.grid(d, d)
     d = subset(d, Var1 != Var2)
     d$uid = apply(d, 1, function(x) paste0(sort(x), collapse = "_"))
@@ -230,16 +249,14 @@ for(ii in unique(names(t))) {
   
   cat(network.size(n), "nodes")
   
-  rownames(s) = s$fullname
+  rownames(s) = s$name
   n %v% "uid" = s[ network.vertex.names(n), "uid" ]
   n %v% "name" = s[ network.vertex.names(n), "name" ]
-  n %v% "fullname" = s[ network.vertex.names(n), "fullname" ]
+  n %v% "sex" = s[ network.vertex.names(n), "sex" ]
+  n %v% "born" = as.numeric(substr(s[ network.vertex.names(n), "born" ], 1, 4))
   n %v% "party" = s[ network.vertex.names(n), "party" ]
-  n %v% "type" = s[ network.vertex.names(n), "type" ]
+  n %v% "nyears" = s[ network.vertex.names(n), "nyears" ]
   n %v% "county" = s[ network.vertex.names(n), "county" ]
-  n %v% "born" = s[ network.vertex.names(n), "born" ]
-  n %v% "mandate" = s[ network.vertex.names(n), "mandate" ]
-  n %v% "seniority" = s[ network.vertex.names(n), "seniority" ]
   n %v% "photo" = s[ network.vertex.names(n), "photo" ]
   
   network::set.edge.attribute(n, "source", as.character(edges[, 1]))
@@ -328,25 +345,25 @@ for(ii in unique(names(t))) {
   assign(paste0("net_", ii), n)
   
   # gexf
-  if(gexf) {
+  if(!grepl("\\d", ii)) {
     
     rgb = t(col2rgb(colors[ names(colors) %in% as.character(n %v% "party") ]))
     mode = "fruchtermanreingold"
     meta = list(creator = "rgexf",
                 description = paste0(mode, " placement"),
-                keywords = "Parliament, Sweden")
+                keywords = "Parliament, Norway")
     
     people = data.frame(url = n %v% "uid",
                         name = network.vertex.names(n), 
                         party = n %v% "party",
                         county = n %v% "county",
-                        born = n %v% "born",
+                        nyears = n %v% "nyears",
                         degree = n %v% "degree",
                         distance = n %v% "distance",
                         photo = n %v% "photo",
                         stringsAsFactors = FALSE)
     
-    node.att = c("url", "party", "county", "born", "degree", "distance", "photo")
+    node.att = c("url", "party", "county", "nyears", "degree", "distance", "photo")
     node.att = cbind(label = people$name, people[, node.att ])
     
     people = data.frame(id = as.numeric(factor(people$name)),
@@ -385,7 +402,7 @@ for(ii in unique(names(t))) {
                                      url = node.att$url,
                                      party = node.att$party,
                                      county = node.att$county,
-                                     born = node.att$born,
+                                     nyears = node.att$nyears,
                                      degree = node.att$degree,
                                      distance = node.att$distance,
                                      photo = node.att$photo,
@@ -411,13 +428,17 @@ m = data.frame(id = ls(pattern = "net_"),
                l = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "modularity_louvain"))
 )
 m$r = m$m / apply(m[, c("w", "l") ], 1, max)
+m$type = ifelse(grepl("\\d", m$id), "Legislature", "Theme")
+m$id = gsub("net_", "", m$id)
+m$id[ grepl("\\d", m$id) ] = as.numeric(m$id[ grepl("\\d", m$id) ]) + 4
 
-g = qplot(data = m, y = n, label = gsub("net_", "", id), x = r, size = d, geom = "text") +
+g = qplot(data = m, y = n, label = id, x = r, size = d, geom = "text") +
+  facet_wrap(~ type, scales = "free_y") +
   labs(y = "Number of bills\n", x = "\nEmpirical / Maximized Modularity") +
   guides(size = FALSE) +
   scale_size_continuous(range = c(4, 6)) +
   theme_linedraw(16)
 
-ggsave("modularity.png", g, width = 9, height = 9)
+ggsave("modularity.png", g, width = 18, height = 9)
 
 # have a nice day

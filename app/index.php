@@ -295,20 +295,20 @@ sigma.parsers.gexf(
       var profile = "<a href='https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Representantfordeling/Representant/?perid=" + e.data.node.attributes['url'] + "' title='Go to profile (Stortinget, new window)' target='_blank'>";
 
       // distance
-      var distance = "around " + Math.round10(e.data.node.attributes['distance'], -1);
+      var distance = "around&nbsp;" + Math.round10(e.data.node.attributes['distance'], -1);
       if(isNaN(e.data.node.attributes['distance']))
         var distance = "impossible to compute (too isolated)";
 
       // transparency
       var rgba = e.data.node.color.replace('0.3)', '0.25)').replace('0.5)', '0.25)');
 
-      document.getElementById('caption').innerHTML = '<p style="background:' + rgba + ';">' + profile + '<img height="120px" class="small" src="https://www.stortinget.no' + 
-        e.data.node.attributes['photo'] + '" alt="no photo available" /></a> You selected ' + profile + 
+      document.getElementById('caption').innerHTML = '<p style="background:' + rgba + ';">' + profile + '<img height="120px" class="small" src="https://www.stortinget.no/Personimages/PersonImages_Large/' + 
+        e.data.node.attributes['photo'] + '_stort.jpg" alt="no photo available" /></a> You selected ' + profile + 
         e.data.node.attributes['label'] + '</a> <span title="Political party affiliation(s): ' + 
         e.data.node.attributes['party'] + '" style="color:' + rgba.replace('0.25)', '1)') + ';">(' + 
         e.data.node.attributes['party'] + ')</span>, an MP from <a title="Go to Wikipedia entry (new window)" target="_blank" href="https://en.wikipedia.org/wiki/' + 
-        e.data.node.attributes['county'] + '">' + e.data.node.attributes['county'] + '</a> who had <span title="unweighted Freeman degree">' + 
-        s.graph.getNeighborsCount(nodeId) + ' bill cosponsor(s)</span> during the legislature. The <a href="http://toreopsahl.com/tnet/weighted-networks/shortest-paths/">mean weighted distance</a> between this MP and all others was&nbsp;' + distance + '.</p>';
+        e.data.node.attributes['county'] + '">' + e.data.node.attributes['county'] + '</a> who had <span title="unweighted Freeman degree">' +
+        s.graph.getNeighborsCount(nodeId) + ' bill cosponsor(s)</span> on this theme. The <a href="http://toreopsahl.com/tnet/weighted-networks/shortest-paths/">mean weighted distance</a> between this MP and all others was ' + distance + '.</p>';
       
       // Since the data has been modified, we need to
       // call the refresh method to make the colors
