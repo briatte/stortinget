@@ -88,21 +88,21 @@
         </a>&nbsp;<?php echo $array[ $theme ]; ?></h2>
 
    <p>Theme&nbsp;&nbsp;
-      <a href="?theme=Barn" class='<?php echo $class["Barn"]; ?>'>Children</a>&nbsp;&nbsp;
-      <a href="?theme=Barnevern" class='<?php echo $class["Barnevern"]; ?>'>Childcare</a>&nbsp;&nbsp;
-      <a href="?theme=Elektrisitet" class='<?php echo $class["Elektrisitet"]; ?>'>Electricity</a>&nbsp;&nbsp;
-      <a href="?theme=Forurensning" class='<?php echo $class["Forurensning"]; ?>'>Pollution</a>&nbsp;&nbsp;
-      <a href="?theme=Funksjonshemmede" class='<?php echo $class["Funksjonshemmede"]; ?>'>Disability</a>&nbsp;&nbsp;
-      <a href="?theme=Innvandrere" class='<?php echo $class["Innvandrere"]; ?>'>Immigration</a>&nbsp;&nbsp;
-      <a href="?theme=Kommuner" class='<?php echo $class["Kommuner"]; ?>'>Municipalities</a>&nbsp;&nbsp;
-      <a href="?theme=Naturvern" class='<?php echo $class["Naturvern"]; ?>'>Environment</a>&nbsp;&nbsp;
-      <a href="?theme=Politi" class='<?php echo $class["Politi"]; ?>'>Police</a>&nbsp;&nbsp;
-      <a href="?theme=Priser" title="Pricing &amp; Competition" class='<?php echo $class["Priser"]; ?>'>Economy</a>&nbsp;&nbsp;
-      <a href="?theme=Samferdsel" class='<?php echo $class["Samferdsel"]; ?>'>Transport</a>&nbsp;&nbsp;
-      <a href="?theme=Skatter" class='<?php echo $class["Skatter"]; ?>'>Taxes</a>&nbsp;&nbsp;
-      <a href="?theme=Skoler" class='<?php echo $class["Skoler"]; ?>'>Schools</a>&nbsp;&nbsp;
-      <a href="?theme=Trygder" class='<?php echo $class["Trygder"]; ?>'>Social Security</a>&nbsp;&nbsp;
-      <a href="?theme=Vegvesen" class='<?php echo $class["Vegvesen"]; ?>'>Roads &amp; Traffic</a>&nbsp;
+      <a href="?theme=Barn" class='<?php echo $class["Barn"]; ?>'><?php echo $array["Barn"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Barnevern" class='<?php echo $class["Barnevern"]; ?>'><?php echo $array["Barnevern"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Elektrisitet" class='<?php echo $class["Elektrisitet"]; ?>'><?php echo $array["Elektrisitet"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Forurensning" class='<?php echo $class["Forurensning"]; ?>'><?php echo $array["Forurensning"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Funksjonshemmede" class='<?php echo $class["Funksjonshemmede"]; ?>'><?php echo $array["Funksjonshemmede"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Innvandrere" class='<?php echo $class["Innvandrere"]; ?>'><?php echo $array["Innvandrere"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Kommuner" class='<?php echo $class["Kommuner"]; ?>'><?php echo $array["Kommuner"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Naturvern" class='<?php echo $class["Naturvern"]; ?>'><?php echo $array["Naturvern"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Politi" class='<?php echo $class["Politi"]; ?>'><?php echo $array["Politi"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Priser" title="Pricing &amp; Competition" class='<?php echo $class["Priser"]; ?>'><?php echo $array["Priser"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Samferdsel" class='<?php echo $class["Samferdsel"]; ?>'><?php echo $array["Samferdsel"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Skatter" class='<?php echo $class["Skatter"]; ?>'><?php echo $array["Skatter"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Skoler" class='<?php echo $class["Skoler"]; ?>'><?php echo $array["Skoler"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Trygder" class='<?php echo $class["Trygder"]; ?>'><?php echo $array["Trygder"]; ?></a>&nbsp;&nbsp;
+      <a href="?theme=Vegvesen" class='<?php echo $class["Vegvesen"]; ?>'><?php echo $array["Vegvesen"]; ?></a>&nbsp;
       <!-- <small>(ordered by number of bills)</small> -->
     </p>
     
