@@ -192,7 +192,7 @@ a$kwd = gsub(" og påtalemyndighet| og konkurranseforhold", "", a$kwd)
 
 t = table(unlist(strsplit(a$kwd, ";")))
 t = t[ t >= quantile(t, .9) ]
-t = c(seq(1997, 2009, 4), names(t))
+t = c(names(t), seq(1997, 2009, 4))
 
 for(ii in unique(t)) {
   
@@ -349,45 +349,34 @@ for(ii in unique(t)) {
     
     rgb = t(col2rgb(colors[ names(colors) %in% as.character(n %v% "party") ]))
     mode = "fruchtermanreingold"
-    meta = list(creator = "rgexf",
-                description = paste0(mode, " placement"),
+    meta = list(creator = "rgexf", description = paste0(mode, " placement"),
                 keywords = "Parliament, Norway")
     
-    people = data.frame(url = n %v% "uid",
-                        name = network.vertex.names(n), 
-                        party = n %v% "party",
-                        county = n %v% "county",
-                        nyears = n %v% "nyears",
-                        degree = n %v% "degree",
-                        distance = n %v% "distance",
-                        photo = n %v% "photo",
-                        stringsAsFactors = FALSE)
+    node.att = data.frame(url = n %v% "uid",
+                          party = n %v% "party",
+                          county = n %v% "county",
+                          degree = n %v% "degree",
+                          distance = n %v% "distance",
+                          photo = n %v% "photo",
+                          stringsAsFactors = FALSE)
     
-    node.att = c("url", "party", "county", "nyears", "degree", "distance", "photo")
-    node.att = cbind(label = people$name, people[, node.att ])
-    
-    people = data.frame(id = as.numeric(factor(people$name)),
-                        label = people$name,
+    people = data.frame(id = as.numeric(factor(network.vertex.names(n))),
+                        label = network.vertex.names(n),
                         stringsAsFactors = FALSE)
     
     relations = data.frame(
       source = as.numeric(factor(n %e% "source", levels = levels(factor(people$label)))),
       target = as.numeric(factor(n %e% "target", levels = levels(factor(people$label)))),
-      weight = n %e% "weight"
-    )
+      weight = round(n %e% "weight", 3), count = n %e% "count")
     relations = na.omit(relations)
     
     nodecolors = lapply(node.att$party, function(x)
-      data.frame(r = rgb[x, 1], g = rgb[x, 2], b = rgb[x, 3], a = .3 ))
+      data.frame(r = rgb[x, 1], g = rgb[x, 2], b = rgb[x, 3], a = .5 ))
     nodecolors = as.matrix(rbind.fill(nodecolors))
-    
+
+    # node placement
     net = as.matrix.network.adjacency(n)
-    
-    # placement method (Kamada-Kawai best at separating at reasonable distances)
-    position = paste0("gplot.layout.", mode)
-    if(!exists(position)) stop("Unsupported placement method '", position, "'")
-    
-    position = do.call(position, list(net, NULL))
+    position = do.call(paste0("gplot.layout.", mode), list(net, NULL))
     position = as.matrix(cbind(position, 1))
     colnames(position) = c("x", "y", "z")
     
@@ -396,21 +385,11 @@ for(ii in unique(t)) {
     position[, "y"] = round(position[, "y"], 2)
     
     write.gexf(nodes = people,
-               edges = relations[, -3],
+               edges = relations[, -3:-4 ],
                edgesWeight = relations[, 3],
-               nodesAtt = data.frame(label = as.character(node.att$label),
-                                     url = node.att$url,
-                                     party = node.att$party,
-                                     county = node.att$county,
-                                     nyears = node.att$nyears,
-                                     degree = node.att$degree,
-                                     distance = node.att$distance,
-                                     photo = node.att$photo,
-                                     stringsAsFactors = FALSE),
-               nodesVizAtt = list(position = position,
-                                  color = nodecolors,
-                                  size = round(node.att$degree)),
-               # edgesVizAtt = list(size = relations[, 3]),
+               nodesAtt = node.att,
+               nodesVizAtt = list(position = position, color = nodecolors, size = round(node.att$degree)),
+               # edgesVizAtt = list(size = relations[, 4]),
                defaultedgetype = "undirected", meta = meta,
                output = paste0("net_", gsub("\\s", "_", ii), ".gexf"))
     

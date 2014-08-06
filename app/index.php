@@ -183,32 +183,6 @@
 </div>
 
 <script>
-function decimalAdjust(type, value, exp) {
-	// If the exp is undefined or zero...
-	if (typeof exp === 'undefined' || +exp === 0) {
-		return Math[type](value);
-	}
-	value = +value;
-	exp = +exp;
-	// If the value is not a number or the exp is not an integer...
-	if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
-		return NaN;
-	}
-	// Shift
-	value = value.toString().split('e');
-	value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
-	// Shift back
-	value = value.toString().split('e');
-	return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
-}
-
-// Decimal round
-if (!Math.round10) {
-	Math.round10 = function(value, exp) {
-		return decimalAdjust('round', value, exp);
-	};
-}
-
 // Add a method to the graph model that returns an
 // object with every neighbors of a node inside:
 sigma.classes.graph.addMethod('neighbors', function(nodeId) {
@@ -295,7 +269,7 @@ sigma.parsers.gexf(
       var profile = "<a href='https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Representantfordeling/Representant/?perid=" + e.data.node.attributes['url'] + "' title='Go to profile (Stortinget, new window)' target='_blank'>";
 
       // distance
-      var distance = "around&nbsp;" + Math.round10(e.data.node.attributes['distance'], -1);
+      var distance = "around&nbsp;" + e.data.node.attributes['distance'];
       if(isNaN(e.data.node.attributes['distance']))
         var distance = "impossible to compute (too isolated)";
 
@@ -304,7 +278,7 @@ sigma.parsers.gexf(
 
       document.getElementById('caption').innerHTML = '<p style="background:' + rgba + ';">' + profile + '<img height="120px" class="small" src="https://www.stortinget.no/Personimages/PersonImages_Large/' + 
         e.data.node.attributes['photo'] + '_stort.jpg" alt="no photo available" /></a> You selected ' + profile + 
-        e.data.node.attributes['label'] + '</a> <span title="Political party affiliation(s): ' + 
+        e.data.node.label + '</a> <span title="Political party affiliation(s): ' + 
         e.data.node.attributes['party'] + '" style="color:' + rgba.replace('0.25)', '1)') + ';">(' + 
         e.data.node.attributes['party'] + ')</span>, an MP from <a title="Go to Wikipedia entry (new window)" target="_blank" href="https://en.wikipedia.org/wiki/' + 
         e.data.node.attributes['county'] + '">' + e.data.node.attributes['county'] + '</a> who had <span title="unweighted Freeman degree">' +
@@ -331,6 +305,10 @@ sigma.parsers.gexf(
       s.refresh();
       
       document.getElementById('caption').innerHTML = '<?php echo $caption; ?>';
+      
+      // pass network dimensions and caption (again)
+      document.getElementById('caption').innerHTML = document.getElementById('caption').innerHTML.replace('/nodes', s.graph.nodes().length).replace('/edges', s.graph.edges().length).replace('/colortext', t);
+      
     });
     
     s.settings({
