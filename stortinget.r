@@ -244,7 +244,7 @@ for(ii in unique(t)) {
   # network
   
   n = network(edges[, 1:2 ], directed = FALSE)
-  n %n% "title" = paste("Stortinget", paste0(range(unique(data$years)), collapse = " to "))
+  n %n% "title" = paste("Storting", paste0(range(unique(data$years)), collapse = " to "))
   n %n% "n_bills" = nrow(data)
   
   cat(network.size(n), "nodes")
@@ -313,9 +313,6 @@ for(ii in unique(t)) {
   n %v% "clustering" = wdeg$clustering    # local
   n %n% "clustering" = clustering_w(tnet) # global
   
-  party = n %v% "party"
-  names(party) = network.vertex.names(n)
-  
   i = colors[ s[ n %e% "source", "party" ] ]
   j = colors[ s[ n %e% "target", "party" ] ]
   
@@ -355,8 +352,7 @@ for(ii in unique(t)) {
     node.att = data.frame(url = n %v% "uid",
                           party = n %v% "party",
                           county = n %v% "county",
-                          degree = n %v% "degree",
-                          distance = n %v% "distance",
+                          distance = round(n %v% "distance", 1),
                           photo = n %v% "photo",
                           stringsAsFactors = FALSE)
     
@@ -367,11 +363,11 @@ for(ii in unique(t)) {
     relations = data.frame(
       source = as.numeric(factor(n %e% "source", levels = levels(factor(people$label)))),
       target = as.numeric(factor(n %e% "target", levels = levels(factor(people$label)))),
-      weight = round(n %e% "weight", 3), count = n %e% "count")
+      weight = n %e% "weight", count = n %e% "count")
     relations = na.omit(relations)
     
     nodecolors = lapply(node.att$party, function(x)
-      data.frame(r = rgb[x, 1], g = rgb[x, 2], b = rgb[x, 3], a = .5 ))
+      data.frame(r = rgb[x, 1], g = rgb[x, 2], b = rgb[x, 3], a = .5))
     nodecolors = as.matrix(rbind.fill(nodecolors))
 
     # node placement
@@ -386,9 +382,10 @@ for(ii in unique(t)) {
     
     write.gexf(nodes = people,
                edges = relations[, -3:-4 ],
-               edgesWeight = relations[, 3],
+               edgesWeight = round(relations[, 3], 3),
                nodesAtt = node.att,
-               nodesVizAtt = list(position = position, color = nodecolors, size = round(node.att$degree)),
+               nodesVizAtt = list(position = position, color = nodecolors,
+                                  size = round(n %v% "degree", 1)),
                # edgesVizAtt = list(size = relations[, 4]),
                defaultedgetype = "undirected", meta = meta,
                output = paste0("net_", gsub("\\s", "_", ii), ".gexf"))
