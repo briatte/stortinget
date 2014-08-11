@@ -2,6 +2,7 @@
 data
 draft
 
+*.gexf
 *.csv
 *.rda
 *.Rproj

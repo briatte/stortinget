@@ -5,6 +5,8 @@ dir.create("data", showWarnings = FALSE)
 library(downloader) # to handle https
 library(GGally)
 library(network)
+library(plyr)
+library(sna)
 library(XML)
 library(stringr)
 library(tnet)
@@ -341,10 +343,10 @@ for(ii in unique(t)) {
     
   }
 
-  assign(paste0("net_", ii), n)
+  assign(paste0("net_no", ii), n)
   
   # gexf
-  if(!grepl("\\d", ii)) {
+  if(gexf) {
     
     rgb = t(col2rgb(colors[ names(colors) %in% as.character(n %v% "party") ]))
     mode = "fruchtermanreingold"
@@ -398,25 +400,25 @@ for(ii in unique(t)) {
 
 save(list = ls(pattern = "net_"), file = "stortinget.rda")
 
-m = data.frame(id = ls(pattern = "net_"),
-               d = sapply(ls(pattern = "net_"), function(x) network.density(get(x))),
-               n = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "n_bills")),
-               m = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "modularity")),
-               w = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "modularity_walktrap")),
-               l = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "modularity_louvain"))
+m = data.frame(id = ls(pattern = "net_no"),
+               d = sapply(ls(pattern = "net_no"), function(x) network.density(get(x))),
+               n = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "n_bills")),
+               m = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "modularity")),
+               w = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "modularity_walktrap")),
+               l = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "modularity_louvain"))
 )
 m$r = m$m / apply(m[, c("w", "l") ], 1, max)
 m$type = ifelse(grepl("\\d", m$id), "Legislature", "Theme")
-m$id = gsub("net_", "", m$id)
+m$id = gsub("net_no", "", m$id)
 m$id[ grepl("\\d", m$id) ] = as.numeric(m$id[ grepl("\\d", m$id) ]) + 4
 
 g = qplot(data = m, y = n, label = id, x = r, size = d, geom = "text") +
   facet_wrap(~ type, scales = "free_y") +
   labs(y = "Number of bills\n", x = "\nEmpirical / Maximized Modularity") +
   guides(size = FALSE) +
-  scale_size_continuous(range = c(4, 6)) +
-  theme_linedraw(16)
+  scale_size_continuous(range = c(2, 4)) +
+  theme_linedraw(10)
 
-ggsave("modularity.png", g, width = 18, height = 9)
+ggsave("modularity.png", g, width = 9, height = 4.5)
 
 # have a nice day
