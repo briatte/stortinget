@@ -1,9 +1,12 @@
 # hi Norway
 
 dir.create("data", showWarnings = FALSE)
+dir.create("photos", showWarnings = FALSE)
+dir.create("plots", showWarnings = FALSE)
 
 library(downloader) # to handle https
 library(GGally)
+library(grid)
 library(network)
 library(plyr)
 library(sna)
@@ -12,20 +15,20 @@ library(stringr)
 library(tnet)
 library(rgexf)
 
-plot = FALSE # set to TRUE to save as .pdf
-gexf = FALSE # set to TRUE to save as .gexf
+plot = TRUE
+gexf = TRUE # only for thematic graphs
 
 colors = c(
-  "Sosialistisk Venstreparti" = "#E41A1C", # Left party, red
-  "Miljøpartiet De Grønne" = "#4DAF4A", # Miljöpartiet, green
-  "Arbeiderpartiet" = "#F781BF", # Labour party, pink
-  "Senterpartiet" = "#A65628", # Senterpartiet, agrarian, brown
-  "Venstre" = "#FF7F00", # historical centrist, orange
-  "Høyre" = "#80B1D3", # centre-right conservatives, light blue
-  "Kristelig Folkeparti" = "#377EB8", # conservatives, blue
-  "Fremskrittspartiet" = "#984EA3", # liberal conservative, purple
-  "Kystpartiet" = "#444444", # non-partisan euroskeptic, dark grey
-  "Independent" = "#AAAAAA" # unaffiliated, light grey
+  "SVP" = "#E41A1C", # Sosialistisk Venstreparti, Left party, red
+  "MDG" = "#4DAF4A", # Miljøpartiet De Grønne, Ecologists, green
+  "AP" = "#F781BF", # Arbeiderpartiet, Labour, pink
+  "SP" = "#A65628", # Senterpartiet, agrarian, brown
+  "V" = "#FF7F00", # Venstre, historical centrist, orange
+  "H" = "#80B1D3", # Høyre, centre-right conservatives, light blue
+  "KFP" = "#377EB8", # Kristelig Folkeparti, conservatives, blue
+  "FP" = "#984EA3", # Fremskrittspartiet, liberal conservative, purple
+  "KP" = "#444444", # Kystpartiet, non-partisan Euroskeptic, dark grey
+  "IND" = "#AAAAAA" # Independent, unaffiliated, light grey
 )
 order = names(colors)
 
@@ -138,10 +141,10 @@ for(k in rev(m)) {
   
 }
 
-if(!file.exists("representanter.csv")) {
+if(!file.exists("data/representanter.csv")) {
   dd = data.frame()
 } else {
-  dd = read.csv("representanter.csv")
+  dd = read.csv("data/representanter.csv")
 }
 
 # get gender from XML listing
@@ -156,7 +159,7 @@ names(dd) = c("uid", "sex2")
 dd$uid = toupper(dd$uid)
 dd$sex2 = as.character(dd$sex2)
 
-write.csv(dd, "representanter.csv", row.names = FALSE)
+write.csv(dd, "data/representanter.csv", row.names = FALSE)
 
 # prepare sponsors
 
@@ -169,24 +172,50 @@ s$sex[ s$sex == "Sønn" | s$sex2 == "mann" ] = "M"
 
 s$born = as.numeric(substr(s$born, 1, 4))
 s$name = gsub("(.*), (.*)", "\\2 \\1", s$name)
+
 s$party[ grepl("Kystpartiet", s$party) ] = "Kystpartiet"
 s$party[ grepl("Uavhengig", s$party) ] = "Independent"
+
+s$partyname = s$party
+s$party[ s$partyname == "Sosialistisk Venstreparti" ] = "SVP"
+s$party[ s$partyname == "Miljøpartiet De Grønne" ] = "MDG"
+s$party[ s$partyname == "Arbeiderpartiet" ] = "AP"
+s$party[ s$partyname == "Senterpartiet" ] = "SP"
+s$party[ s$partyname == "Venstre" ] = "V"
+s$party[ s$partyname == "Høyre" ] = "H"
+s$party[ s$partyname == "Kristelig Folkeparti" ] = "KFP"
+s$party[ s$partyname == "Fremskrittspartiet" ] = "FP"
+s$party[ s$partyname == "Kystpartiet" ] = "KP"
+s$party[ s$partyname == "Independent" ] = "IND"
+
 s$county = gsub(" for |\\s$", "", s$county)
 s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
   as.numeric(as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\2", s$seniority)) > 365 / 2)
-s$photo = gsub("/Personimages/PersonImages_Large/|_stort\\.jpg", "", s$photo)
 
-s = s[, c("uid", "name", "born", "sex", "party", "nyears", "type", "county", "mandate", "photo") ]
+# download photos
+for(i in unique(s$photo)) {
+  photo = gsub("/Personimages/PersonImages_Large/(.*)_stort(.*)", "photos/\\1\\2", i)
+  if((!file.exists(photo) | !file.info(photo)$size) & !grepl("Default", photo))
+    try(download(paste0(root, i), photo, mode = "wb", quiet = TRUE), silent = TRUE)
+  if(!file.exists(photo) | !file.info(photo)$size) {
+    file.remove(photo) # will warn if missing
+    s$photo[ s$photo == i ] = 0
+  } else {
+    s$photo[ s$photo == i ] = 1
+  }
+}
+
+s = s[, c("uid", "name", "born", "sex", "party", "partyname", "nyears", "type", "county", "mandate", "photo") ]
 
 # prepare bills
 
 a$n_au = 1 + str_count(a$url, ";")
 
-a$legislature = 1997
-a$legislature[ a$years %in% c("2001-2002", "2002-2003", "2003-2004", "2004-2005") ] = 2001
-a$legislature[ a$years %in% c("2005-2006", "2006-2007", "2007-2008", "2008-2009") ] = 2005
-a$legislature[ a$years %in% c("2009-2010", "2010-2011", "2011-2012", "2012-2013") ] = 2009
-a$legislature[ a$years %in% c("2013-2014", "2014-2015", "2015-2016", "2016-2017") ] = 2013
+a$legislature = "1997-2001"
+a$legislature[ a$years %in% c("2001-2002", "2002-2003", "2003-2004", "2004-2005") ] = "2001-2005"
+a$legislature[ a$years %in% c("2005-2006", "2006-2007", "2007-2008", "2008-2009") ] = "2005-2009"
+a$legislature[ a$years %in% c("2009-2010", "2010-2011", "2011-2012", "2012-2013") ] = "2009-2013"
+a$legislature[ a$years %in% c("2013-2014", "2014-2015", "2015-2016", "2016-2017") ] = "2013-2017"
 
 a$kwd = gsub("Særavgifter", "Skatter", a$kwd)  # border and domestic taxation
 a$kwd = gsub("Vegtrafikk", "Vegvesen", a$kwd) # roads and traffic
@@ -196,7 +225,7 @@ a$kwd = gsub(" og påtalemyndighet| og konkurranseforhold", "", a$kwd)
 
 t = table(unlist(strsplit(a$kwd, ";")))
 t = t[ t >= quantile(t, .9) ]
-t = c(names(t), seq(1997, 2009, 4))
+t = c(names(t), unique(a$legislature))
 
 for(ii in unique(t)) {
   
@@ -208,39 +237,32 @@ for(ii in unique(t)) {
 
   cat(":", nrow(data), "cosponsored documents, ")
   
-  edges = lapply(unique(data$url), function(d) {
+  edges = rbind.fill(lapply(unique(data$url), function(d) {
     
-    d = unlist(strsplit(d, ";"))
-    d = s$name[ s$uid %in% d ]
-    d = expand.grid(d, d)
-    d = subset(d, Var1 != Var2)
-    d$uid = apply(d, 1, function(x) paste0(sort(x), collapse = "_"))
-    d = unique(d$uid)
-    if(length(d)) {
-      d = data.frame(i = gsub("(.*)_(.*)", "\\1", d),
-                     j = gsub("(.*)_(.*)", "\\2", d),
-                     w = length(d))
-      return(d)
-    } else {
+    w = unlist(strsplit(d, ";"))
+    d = s$name[ s$uid %in% w ]
+
+    d = subset(expand.grid(d, d), Var1 != Var2)
+    d = unique(apply(d, 1, function(x) paste0(sort(x), collapse = "_")))
+
+    if(length(d))
+      return(data.frame(d, w = length(w) - 1)) # number of cosponsors
+    else
       return(data.frame())
-    }
     
-  })
-  
-  edges = rbind.fill(edges)
-  edges$uid = apply(edges, 1, function(x) paste0(sort(x[ 1:2 ]), collapse = "_"))
+  }))
   
   # raw edge counts
-  count = table(edges$uid)
+  count = table(edges$d)
   
   # Newman-Fowler weights (weighted quantity of bills cosponsored)
-  edges = aggregate(w ~ uid, function(x) sum(1 / x), data = edges)
+  edges = aggregate(w ~ d, function(x) sum(1 / x), data = edges)
   
   # raw counts
-  edges$count = as.vector(count[ edges$uid ])
+  edges$count = as.vector(count[ edges$d ])
   
-  edges = data.frame(i = gsub("(.*)_(.*)", "\\1", edges$uid),
-                     j = gsub("(.*)_(.*)", "\\2", edges$uid),
+  edges = data.frame(i = gsub("(.*)_(.*)", "\\1", edges$d),
+                     j = gsub("(.*)_(.*)", "\\2", edges$d),
                      w = edges$w, n = edges[, 3])
   
   cat(nrow(edges), "edges, ")
@@ -248,17 +270,23 @@ for(ii in unique(t)) {
   # network
   
   n = network(edges[, 1:2 ], directed = FALSE)
-  n %n% "title" = paste("Storting", paste0(range(unique(data$years)), collapse = " to "))
+  n %n% "title" = paste("Storting", paste0(range(unique(substr(data$years, 1, 4))), collapse = " to "))
   n %n% "n_bills" = nrow(data)
+  
+  if(grepl("\\d{4}", ii))
+    n %n% "n_sponsors" = table(subset(a, legislature == ii)$n_au)
+  else
+    n %n% "n_sponsors" = table(subset(a, grepl(ii, kwd))$n_au)
   
   cat(network.size(n), "nodes")
   
   rownames(s) = s$name
-  n %v% "uid" = s[ network.vertex.names(n), "uid" ]
+  n %v% "url" = s[ network.vertex.names(n), "uid" ]
   n %v% "name" = s[ network.vertex.names(n), "name" ]
   n %v% "sex" = s[ network.vertex.names(n), "sex" ]
   n %v% "born" = as.numeric(substr(s[ network.vertex.names(n), "born" ], 1, 4))
   n %v% "party" = s[ network.vertex.names(n), "party" ]
+  n %v% "partyname" = s[ network.vertex.names(n), "partyname" ]
   n %v% "nyears" = s[ network.vertex.names(n), "nyears" ]
   n %v% "county" = s[ network.vertex.names(n), "county" ]
   n %v% "photo" = s[ network.vertex.names(n), "photo" ]
@@ -278,7 +306,8 @@ for(ii in unique(t)) {
   E(nn)$weight = edges[, 3]
   
   i = s[ V(nn)$name, "party" ]
-  i[ i %in% c("Independent") ] = NA # unaffiliateds
+  # ignoring: unaffiliateds, regionalist Coastal party, single Green MP
+  i[ i %in% c("Independent", "Kystpartiet", "Miljøpartiet De Grønne") ] = NA
   
   nn = nn - which(is.na(i))
   i = as.numeric(factor(i[ !is.na(i) ]))
@@ -325,10 +354,17 @@ for(ii in unique(t)) {
   
   print(table(n %v% "party", exclude = NULL))
   
+  # number of bills cosponsored
+  nb = sapply(n %v% "url", function(x) {
+    sum(unlist(strsplit(data$url, ";")) == x) # ids are varying-length letters
+  })
+  n %v% "n_bills" = as.vector(nb)
+  
   if(plot) {
     
-    q = unique(quantile(n %v% "degree"))
+    q = unique(quantile(n %v% "degree")) # safer
     n %v% "size" = as.numeric(cut(n %v% "degree", q, include.lowest = TRUE))
+
     g = suppressWarnings(ggnet(n, size = 0, segment.alpha = 1/2, # mode = "kamadakawai",
                                segment.color = party) +
                            geom_point(alpha = 1/3, aes(size = n %v% "size", color = n %v% "party")) +
@@ -339,22 +375,40 @@ for(ii in unique(t)) {
                                  legend.text = element_text(size = 16)) +
                            guides(size = FALSE, color = guide_legend(override.aes = list(alpha = 1/3, size = 6))))
     
-    ggsave(paste0("net_", gsub("\\s", "_", ii), "_", nrow(data), ".pdf"), g, width = 12, height = 9)
+    if(grepl("\\d{4}", ii)) {
+      ggsave(paste0("plots/net_no", ii, ".pdf"), g, width = 12, height = 9)
+      ggsave(paste0("plots/net_no", ii, ".jpg"),
+             g + theme(legend.position = "none"), width = 9, height = 9)
+    } else {
+      ggsave(paste0("plots/net_no", ii, ".pdf"), g, width = 12, height = 9)
+      ggsave(paste0("plots/net_no", ii, ".jpg"),
+             g + theme(legend.position = "none"), width = 9, height = 9)
+    }
     
   }
-
-  assign(paste0("net_no", ii), n)
   
-  # gexf
-  if(gexf) {
+  if(grepl("\\d{4}", ii)) {
+    assign(paste0("net_no", substr(ii, 1, 4)), n)
+    assign(paste0("edges_no", substr(ii, 1, 4)), edges)
+    assign(paste0("bills_no", substr(ii, 1, 4)), data)
+  } else {
+    assign(paste0("net_", ii), n)
+    # assign(paste0("edges_", ii), edges)
+    # assign(paste0("bills_", ii), data)
+  }
+  
+  # gexf (only for themes)
+  if(!grepl("\\d{4}", ii) & gexf) {
     
     rgb = t(col2rgb(colors[ names(colors) %in% as.character(n %v% "party") ]))
     mode = "fruchtermanreingold"
-    meta = list(creator = "rgexf", description = paste0(mode, " placement"),
-                keywords = "Parliament, Norway")
+    meta = list(creator = "rgexf",
+                description = paste(mode, "placement", nrow(data), "bills"),
+                keywords = "parliament, norway")
     
-    node.att = data.frame(url = n %v% "uid",
-                          party = n %v% "party",
+    node.att = data.frame(url = n %v% "url",
+                          party = n %v% "partyname",
+                          bills = n %v% "n_bills",
                           county = n %v% "county",
                           distance = round(n %v% "distance", 1),
                           photo = n %v% "photo",
@@ -367,49 +421,50 @@ for(ii in unique(t)) {
     relations = data.frame(
       source = as.numeric(factor(n %e% "source", levels = levels(factor(people$label)))),
       target = as.numeric(factor(n %e% "target", levels = levels(factor(people$label)))),
-      weight = n %e% "weight", count = n %e% "count")
+      weight = round(n %e% "weight", 2), count = n %e% "count")
     relations = na.omit(relations)
     
-    nodecolors = lapply(node.att$party, function(x)
+    # check all weights are positive after rounding
+    stopifnot(all(relations$weight > 0))
+    
+    nodecolors = lapply(n %v% "party", function(x)
       data.frame(r = rgb[x, 1], g = rgb[x, 2], b = rgb[x, 3], a = .5))
     nodecolors = as.matrix(rbind.fill(nodecolors))
 
     # node placement
-    net = as.matrix.network.adjacency(n)
-    position = do.call(paste0("gplot.layout.", mode), list(net, NULL))
-    position = as.matrix(cbind(position, 1))
+    position = do.call(paste0("gplot.layout.", mode),
+                       list(as.matrix.network.adjacency(n), NULL))
+    position = as.matrix(cbind(round(position, 1), 1))
     colnames(position) = c("x", "y", "z")
     
-    # compress floats
-    position[, "x"] = round(position[, "x"], 2)
-    position[, "y"] = round(position[, "y"], 2)
-    
-    write.gexf(nodes = people,
-               edges = relations[, -3:-4 ],
-               edgesWeight = round(relations[, 3], 3),
-               nodesAtt = node.att,
+    write.gexf(nodes = people, nodesAtt = node.att,
+               edges = relations[, 1:2 ], edgesWeight = relations[, 3],
                nodesVizAtt = list(position = position, color = nodecolors,
                                   size = round(n %v% "degree", 1)),
                # edgesVizAtt = list(size = relations[, 4]),
                defaultedgetype = "undirected", meta = meta,
-               output = paste0("net_", gsub("\\s", "_", ii), ".gexf"))
+               output = paste0("net_", ii, ".gexf"))
     
   }
   
 }
 
-save(list = ls(pattern = "net_"), file = "stortinget.rda")
+save(list = ls(pattern = "^(net|edges|bills)_no\\d{4}$"), file = "data/net_no.rda")
 
-m = data.frame(id = ls(pattern = "net_no"),
-               d = sapply(ls(pattern = "net_no"), function(x) network.density(get(x))),
-               n = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "n_bills")),
-               m = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "modularity")),
-               w = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "modularity_walktrap")),
-               l = sapply(ls(pattern = "net_no"), function(x) get.network.attribute(get(x), "modularity_louvain"))
+if(gexf)
+  zip("net_no.zip", dir(pattern = "^net_\\w+\\.gexf$"))
+
+m = data.frame(id = ls(pattern = "net_"),
+               d = sapply(ls(pattern = "net_"), function(x) network.density(get(x))),
+               n = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "n_bills")),
+               m = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "modularity")),
+               w = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "modularity_walktrap")),
+               l = sapply(ls(pattern = "net_"), function(x) get.network.attribute(get(x), "modularity_louvain"))
 )
+
 m$r = m$m / apply(m[, c("w", "l") ], 1, max)
 m$type = ifelse(grepl("\\d", m$id), "Legislature", "Theme")
-m$id = gsub("net_no", "", m$id)
+m$id = gsub("net_", "", m$id)
 m$id[ grepl("\\d", m$id) ] = as.numeric(m$id[ grepl("\\d", m$id) ]) + 4
 
 g = qplot(data = m, y = n, label = id, x = r, size = d, geom = "text") +
@@ -419,6 +474,8 @@ g = qplot(data = m, y = n, label = id, x = r, size = d, geom = "text") +
   scale_size_continuous(range = c(2, 4)) +
   theme_linedraw(10)
 
-ggsave("modularity.png", g, width = 9, height = 4.5)
+print(g)
+
+ggsave("plots/modularity.png", g, width = 9, height = 4.5)
 
 # have a nice day
