@@ -5,10 +5,12 @@ dir.create("photos", showWarnings = FALSE)
 dir.create("plots", showWarnings = FALSE)
 
 library(downloader) # to handle https
+library(ggplot2)
 library(GGally)
 library(grid)
 library(network)
 library(plyr)
+library(dplyr)
 library(sna)
 library(XML)
 library(stringr)
@@ -33,7 +35,7 @@ colors = c(
 order = names(colors)
 
 root = "https://www.stortinget.no"
-years = paste0(1998:2013, "-", 1999:2014)
+years = paste0(1998:2014, "-", 1999:2015)
 
 # get bills
 
@@ -380,8 +382,8 @@ for(ii in unique(t)) {
       ggsave(paste0("plots/net_no", ii, ".jpg"),
              g + theme(legend.position = "none"), width = 9, height = 9)
     } else {
-      ggsave(paste0("plots/net_no", ii, ".pdf"), g, width = 12, height = 9)
-      ggsave(paste0("plots/net_no", ii, ".jpg"),
+      ggsave(paste0("plots/net_", ii, ".pdf"), g, width = 12, height = 9)
+      ggsave(paste0("plots/net_", ii, ".jpg"),
              g + theme(legend.position = "none"), width = 9, height = 9)
     }
     
@@ -464,7 +466,7 @@ m = data.frame(id = ls(pattern = "net_"),
 
 m$r = m$m / apply(m[, c("w", "l") ], 1, max)
 m$type = ifelse(grepl("\\d", m$id), "Legislature", "Theme")
-m$id = gsub("net_", "", m$id)
+m$id = gsub("net_(no)?", "", m$id)
 m$id[ grepl("\\d", m$id) ] = as.numeric(m$id[ grepl("\\d", m$id) ]) + 4
 
 g = qplot(data = m, y = n, label = id, x = r, size = d, geom = "text") +
