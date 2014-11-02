@@ -239,7 +239,7 @@ for(ii in unique(t)) {
 
   cat(":", nrow(data), "cosponsored documents, ")
   
-  edges = rbind.fill(lapply(unique(data$url), function(d) {
+  edges = rbind.fill(lapply(data$url, function(d) {
     
     w = unlist(strsplit(d, ";"))
     d = s$name[ s$uid %in% w ]
