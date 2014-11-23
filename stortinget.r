@@ -21,16 +21,16 @@ plot = TRUE
 gexf = TRUE # only for thematic graphs
 
 colors = c(
-  "SV" = "#E41A1C", # Sosialistisk Venstreparti, red
-  "MDG" = "#B3DE69", # Miljøpartiet De Grønne, light green/olive
-  "Ap" = "#FB8072", # Arbeiderpartiet, light red
-  "Sp" = "#4DAF4A", # Senterpartiet, green
-  "V" = "#1B9E77", # Venstre, dark green/teal
-  "KrF" = "#FFFF33", # Kristelig Folkeparti,  yellow
-  "H" = "#80B1D3", # Høyre, light blue
-  "FrP" = "#377EB8", # Fremskrittspartiet, blue
-  "KyP" = "#444444", # Kystpartiet, dark grey
-  "Ind" = "#AAAAAA" # Independent, light grey
+  "SV" = "#E41A1C",  # SV  -- Sosialistisk Venstreparti -- red
+  "MDG" = "#B3DE69", # MDG -- Miljøpartiet De Grønne    -- light green/olive
+  "AP" = "#FB8072",  # Ap  -- Arbeiderpartiet           -- light red
+  "SP" = "#4DAF4A",  # Sp  -- Senterpartiet             -- green
+  "V" = "#1B9E77",   # V   -- Venstre                   -- dark green/teal
+  "KRF" = "#FFFF33", # KrF -- Kristelig Folkeparti      -- yellow
+  "H" = "#80B1D3",   # H   -- Høyre                     -- light blue
+  "FRP" = "#377EB8", # FrP -- Fremskrittspartiet        -- blue
+  "KYP" = "#444444", #     -- Kystpartiet               -- dark grey
+  "IND" = "#AAAAAA"  #     -- Independent               -- light grey
 )
 order = names(colors)
 
@@ -184,6 +184,7 @@ s$name = gsub("(.*), (.*)", "\\2 \\1", s$name)
 s$party[ grepl("Kystpartiet", s$party) ] = "Kystpartiet"
 s$party[ grepl("Uavhengig", s$party) ] = "Independent"
 
+# official party codes
 s$partyname = s$party
 s$party[ s$partyname == "Sosialistisk Venstreparti" ] = "SV"
 s$party[ s$partyname == "Miljøpartiet De Grønne" ] = "MDG"
@@ -193,8 +194,9 @@ s$party[ s$partyname == "Venstre" ] = "V"
 s$party[ s$partyname == "Høyre" ] = "H"
 s$party[ s$partyname == "Kristelig Folkeparti" ] = "KrF"
 s$party[ s$partyname == "Fremskrittspartiet" ] = "FrP"
-s$party[ s$partyname == "Kystpartiet" ] = "KyP"
-s$party[ s$partyname == "Independent" ] = "Ind"
+s$party[ s$partyname == "Kystpartiet" ] = "KyP" # unofficial
+s$party[ s$partyname == "Independent" ] = "Ind" # unofficial
+s$party = toupper(s$party)
 
 s$county = gsub(" for |\\s$", "", s$county)
 s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
