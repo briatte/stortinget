@@ -21,16 +21,16 @@ plot = TRUE
 gexf = TRUE # only for thematic graphs
 
 colors = c(
-  "SVP" = "#E41A1C", # Sosialistisk Venstreparti, Left party, red
-  "MDG" = "#4DAF4A", # Miljøpartiet De Grønne, Ecologists, green
-  "AP" = "#F781BF", # Arbeiderpartiet, Labour, pink
-  "SP" = "#A65628", # Senterpartiet, agrarian, brown
-  "V" = "#FF7F00", # Venstre, historical centrist, orange
-  "H" = "#80B1D3", # Høyre, centre-right conservatives, light blue
-  "KFP" = "#377EB8", # Kristelig Folkeparti, conservatives, blue
-  "FP" = "#984EA3", # Fremskrittspartiet, liberal conservative, purple
-  "KP" = "#444444", # Kystpartiet, non-partisan Euroskeptic, dark grey
-  "IND" = "#AAAAAA" # Independent, unaffiliated, light grey
+  "SV" = "#E41A1C", # Sosialistisk Venstreparti, red
+  "MDG" = "#B3DE69", # Miljøpartiet De Grønne, light green/olive
+  "Ap" = "#FB8072", # Arbeiderpartiet, light red
+  "Sp" = "#4DAF4A", # Senterpartiet, green
+  "V" = "#1B9E77", # Venstre, dark green/teal
+  "KrF" = "#FFFF33", # Kristelig Folkeparti,  yellow
+  "H" = "#80B1D3", # Høyre, light blue
+  "FrP" = "#377EB8", # Fremskrittspartiet, blue
+  "KyP" = "#444444", # Kystpartiet, dark grey
+  "Ind" = "#AAAAAA" # Independent, light grey
 )
 order = names(colors)
 
@@ -144,17 +144,23 @@ for(k in rev(m)) {
 }
 
 if(!file.exists("data/representanter.csv")) {
+
   dd = data.frame()
+
 } else {
+  
   dd = read.csv("data/representanter.csv")
+
 }
 
 # get gender from XML listing
 for(ii in rev(na.omit(m[ !grepl("_", m) & !m %in% dd$uid & m != "NA" ]))) {
+
   cat(which(ii == m), "Finding gender of MP", ii, "\n")
   hh = xmlToList(paste0("http://data.stortinget.no/eksport/person?personid=", ii))
   dd = rbind(dd, cbind(hh[ grepl("id", names(hh)) ],
                        hh[ grepl("kjoenn", names(unlist(hh))) ]))
+
 }
 dd = unique(dd)
 names(dd) = c("uid", "sex2")
@@ -179,16 +185,16 @@ s$party[ grepl("Kystpartiet", s$party) ] = "Kystpartiet"
 s$party[ grepl("Uavhengig", s$party) ] = "Independent"
 
 s$partyname = s$party
-s$party[ s$partyname == "Sosialistisk Venstreparti" ] = "SVP"
+s$party[ s$partyname == "Sosialistisk Venstreparti" ] = "SV"
 s$party[ s$partyname == "Miljøpartiet De Grønne" ] = "MDG"
-s$party[ s$partyname == "Arbeiderpartiet" ] = "AP"
-s$party[ s$partyname == "Senterpartiet" ] = "SP"
+s$party[ s$partyname == "Arbeiderpartiet" ] = "Ap"
+s$party[ s$partyname == "Senterpartiet" ] = "Sp"
 s$party[ s$partyname == "Venstre" ] = "V"
 s$party[ s$partyname == "Høyre" ] = "H"
-s$party[ s$partyname == "Kristelig Folkeparti" ] = "KFP"
-s$party[ s$partyname == "Fremskrittspartiet" ] = "FP"
-s$party[ s$partyname == "Kystpartiet" ] = "KP"
-s$party[ s$partyname == "Independent" ] = "IND"
+s$party[ s$partyname == "Kristelig Folkeparti" ] = "KrF"
+s$party[ s$partyname == "Fremskrittspartiet" ] = "FrP"
+s$party[ s$partyname == "Kystpartiet" ] = "KyP"
+s$party[ s$partyname == "Independent" ] = "Ind"
 
 s$county = gsub(" for |\\s$", "", s$county)
 s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
@@ -309,7 +315,7 @@ for(ii in unique(t)) {
   
   i = s[ V(nn)$name, "party" ]
   # ignoring: unaffiliateds, regionalist Coastal party, single Green MP
-  i[ i %in% c("Independent", "Kystpartiet", "Miljøpartiet De Grønne") ] = NA
+  i[ i %in% c("Ind", "KyP", "MDG") ] = NA
   
   nn = nn - which(is.na(i))
   i = as.numeric(factor(i[ !is.na(i) ]))
@@ -378,11 +384,13 @@ for(ii in unique(t)) {
                            guides(size = FALSE, color = guide_legend(override.aes = list(alpha = 1/3, size = 6))))
     
     if(grepl("\\d{4}", ii)) {
-      ggsave(paste0("plots/net_no", ii, ".pdf"), g, width = 12, height = 9)
+      ggsave(paste0("plots/net_no", ii, ".pdf"), 
+             g + theme(legend.key = element_blank()), width = 10, height = 9)
       ggsave(paste0("plots/net_no", ii, ".jpg"),
              g + theme(legend.position = "none"), width = 9, height = 9)
     } else {
-      ggsave(paste0("plots/net_", ii, ".pdf"), g, width = 12, height = 9)
+      ggsave(paste0("plots/net_", ii, ".pdf"), 
+             g + theme(legend.key = element_blank()), width = 10, height = 9)
       ggsave(paste0("plots/net_", ii, ".jpg"),
              g + theme(legend.position = "none"), width = 9, height = 9)
     }
