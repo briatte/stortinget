@@ -391,14 +391,18 @@ for(ii in unique(t)) {
     
     if(grepl("\\d{4}", ii)) {
       ggsave(paste0("plots/net_no", ii, ".pdf"), 
-             g + theme(legend.key = element_blank()), width = 10, height = 9)
+             g + theme(legend.key = element_blank()),
+             width = 10, height = 9)
       ggsave(paste0("plots/net_no", ii, ".jpg"),
-             g + theme(legend.position = "none"), width = 9, height = 9)
+             g + theme(legend.position = "none"),
+             width = 9, height = 9, dpi = 150)
     } else {
       ggsave(paste0("plots/net_", ii, ".pdf"), 
-             g + theme(legend.key = element_blank()), width = 10, height = 9)
+             g + theme(legend.key = element_blank()), 
+             width = 10, height = 9)
       ggsave(paste0("plots/net_", ii, ".jpg"),
-             g + theme(legend.position = "none"), width = 9, height = 9)
+             g + theme(legend.position = "none"),
+             width = 9, height = 9, dpi = 150)
     }
     
   }
