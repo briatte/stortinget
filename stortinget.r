@@ -22,12 +22,12 @@ gexf = TRUE # only for thematic graphs
 
 colors = c(
   # Left
-  "SV"  = "#B2182B", # SV  -- Sosialistisk Venstreparti -- dark red
+  "SV"  = "#E41A1C", # SV  -- Sosialistisk Venstreparti -- red
   "MDG" = "#B3DE69", # MDG -- Miljøpartiet De Grønne    -- light green/olive
-  "AP"  = "#E41A1C", # Ap  -- Arbeiderpartiet           -- red
+  "AP"  = "#F781BF", # Ap  -- Arbeiderpartiet           -- pink
   # Centre
   "SP"  = "#4DAF4A", # Sp  -- Senterpartiet             -- green
-  "V"   = "#1B9E77", # V   -- Venstre                   -- dark green/teal
+  "V"   = "#01665E", # V   -- Venstre                   -- dark green/teal #2
   "KRF" = "#FFFF33", # KrF -- Kristelig Folkeparti      -- yellow
   # Right
   "H"   = "#80B1D3", # H   -- Høyre                     -- light blue
