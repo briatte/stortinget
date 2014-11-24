@@ -27,7 +27,7 @@ colors = c(
   "AP"  = "#F781BF", # Ap  -- Arbeiderpartiet           -- pink
   # Centre
   "SP"  = "#4DAF4A", # Sp  -- Senterpartiet             -- green
-  "V"   = "#01665E", # V   -- Venstre                   -- dark green/teal #2
+  "V"   = "#01665E", # V   -- Venstre                   -- dark green/teal
   "KRF" = "#FFFF33", # KrF -- Kristelig Folkeparti      -- yellow
   # Right
   "H"   = "#80B1D3", # H   -- Høyre                     -- light blue
