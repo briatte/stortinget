@@ -21,15 +21,19 @@ plot = TRUE
 gexf = TRUE # only for thematic graphs
 
 colors = c(
+  # Left
   "SV" = "#E41A1C",  # SV  -- Sosialistisk Venstreparti -- red
   "MDG" = "#B3DE69", # MDG -- Miljøpartiet De Grønne    -- light green/olive
   "AP" = "#FB8072",  # Ap  -- Arbeiderpartiet           -- light red
+  # Centre
   "SP" = "#4DAF4A",  # Sp  -- Senterpartiet             -- green
   "V" = "#1B9E77",   # V   -- Venstre                   -- dark green/teal
   "KRF" = "#FFFF33", # KrF -- Kristelig Folkeparti      -- yellow
+  # Right
   "H" = "#80B1D3",   # H   -- Høyre                     -- light blue
   "FRP" = "#377EB8", # FrP -- Fremskrittspartiet        -- blue
   "KYP" = "#444444", #     -- Kystpartiet               -- dark grey
+  # Other
   "IND" = "#AAAAAA"  #     -- Independent               -- light grey
 )
 order = names(colors)
