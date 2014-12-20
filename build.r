@@ -29,7 +29,7 @@ for(ii in unique(t)) {
   # directed edge list
   #
   
-  edges = rbind.fill(lapply(data$url, function(d) {
+  edges = rbind_all(lapply(data$url, function(d) {
     
     w = unlist(strsplit(d, ";"))
     
