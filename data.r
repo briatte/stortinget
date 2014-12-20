@@ -49,7 +49,7 @@ for(i in years) {
       
       # cat("Document", sprintf("%3.0f", which(h == j)), file, ":", 1 + str_count(hh$aut, ";"), "sponsors")
       
-      hh = length(unique(unlist(str_extract_all(hh$aut, "\\([a-zA-Z]+\\)"))))
+      hh = n_distinct(unlist(str_extract_all(hh$aut, "\\([a-zA-Z]+\\)")))
       # cat(ifelse(hh > 1, paste("", hh, "parties\n"), "\n"))
       
     } else {
