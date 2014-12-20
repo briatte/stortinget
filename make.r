@@ -9,6 +9,7 @@ source("parties.r")
 dir.create("data"   , showWarnings = FALSE)
 dir.create("photos" , showWarnings = FALSE)
 dir.create("plots"  , showWarnings = FALSE)
+dir.create("raw"  , showWarnings = FALSE)
 
 # parameters
 

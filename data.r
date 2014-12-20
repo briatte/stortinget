@@ -4,11 +4,12 @@ years = paste0(1998:2014, "-", 1999:2015)
 a = data.frame()
 pass = TRUE
 root = "https://www.stortinget.no"
+sponsors = "data/representanter.csv"
 
 for(i in years) {
   
   cat("Scraping years", i, "...\n")
-  file = paste0("data/index", i, ".html")
+  file = paste0("raw/index", i, ".html")
   
   if(!file.exists(file))
     download(paste0("https://www.stortinget.no/no/Saker-og-publikasjoner/Publikasjoner/Representantforslag/?pid=", i),
@@ -17,9 +18,12 @@ for(i in years) {
   h = htmlParse(file)
   h = xpathSApply(h, "//a[contains(@href, '/dok')]/@href")
   
+  # avoid known permanent errors
+  h = h[ !grepl("dok8-(200809-020|200809-045|201112-012|201112-023|201112-050|201415-016|201415-017)", h) ]
+  
   for(j in rev(h)) {
     
-    file = gsub("(.*)dok(.*)/", "data/doc\\2.html", j)
+    file = gsub("(.*)dok(.*)/", "raw/doc\\2.html", j)
     
     if(!file.exists(file)) {
       
@@ -76,7 +80,7 @@ cat("Found", nrow(a), "documents", sum(a$n_au > 1), "cosponsored", length(m), "u
 
 for(k in rev(m)) {
   
-  file = paste0("data/rep", k, ".html")
+  file = paste0("raw/rep", k, ".html")
   
   if(!file.exists(file))
     download(paste0(root,
@@ -99,20 +103,20 @@ for(k in rev(m)) {
   
   cat("Sponsor", sprintf("%3.0f", which(m == k)), k, name, sex, "\n")
   
-  s = rbind(s, data.frame(uid = gsub("^data/rep|\\.html$", "", file),
+  s = rbind(s, data.frame(uid = gsub("^raw/rep|\\.html$", "", file),
                           name, party, type, county, mandate, seniority, born, sex, 
                           photo,
                           stringsAsFactors = FALSE))
   
 }
 
-if(!file.exists("data/representanter.csv")) {
+if(!file.exists(sponsors)) {
   
   dd = data.frame()
   
 } else {
   
-  dd = read.csv("data/representanter.csv")
+  dd = read.csv(sponsors)
   
 }
 
@@ -130,7 +134,7 @@ names(dd) = c("uid", "sex2")
 dd$uid = toupper(dd$uid)
 dd$sex2 = as.character(dd$sex2)
 
-write.csv(dd, "data/representanter.csv", row.names = FALSE)
+write.csv(dd, sponsors, row.names = FALSE)
 
 # prepare sponsors
 
