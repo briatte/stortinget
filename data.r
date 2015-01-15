@@ -101,7 +101,7 @@ for(k in rev(m)) {
   sex = xpathSApply(h, "//div[@class='mainbody'][2]", xmlValue)
   sex = ifelse(length(sex), str_extract(sex, "Datter|Sønn"), NA)
   
-  cat("Sponsor", sprintf("%3.0f", which(m == k)), k, name, sex, "\n")
+  cat("Sponsor", sprintf("%3.0f", which(m == k)), k, name, "\n")
   
   s = rbind(s, data.frame(uid = gsub("^raw/rep|\\.html$", "", file),
                           name, party, type, county, mandate, seniority, born, sex, 
@@ -172,17 +172,26 @@ s$county = gsub("\\s", "_", s$county)
 s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
   as.numeric(as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\2", s$seniority)) > 365 / 2)
 
-# download photos
+# download photos (identical to unique profile identifier)
 for(i in unique(s$photo)) {
+  
   photo = gsub("/Personimages/PersonImages_Large/(.*)_stort(.*)", "photos/\\1\\2", i)
-  if((!file.exists(photo) | !file.info(photo)$size) & !grepl("Default", photo))
+  photo = gsub("%c3", "_", gsub("%85", "A", gsub("%98", "O", photo)))
+  
+  if(!file.exists(photo))
     try(download(paste0(root, i), photo, mode = "wb", quiet = TRUE), silent = TRUE)
-  if(!file.exists(photo) | !file.info(photo)$size) {
-    file.remove(photo) # will warn if missing
+  
+  if(!file.info(photo)$size | grepl("Default", photo)) {
+    
+    file.remove(photo)
     s$photo[ s$photo == i ] = 0
+    
   } else {
+    
     s$photo[ s$photo == i ] = 1
+    
   }
+  
 }
 
 s = s[, c("uid", "name", "born", "sex", "party", "partyname", "nyears", "type", "county", "mandate", "photo") ]
