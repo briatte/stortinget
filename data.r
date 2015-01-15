@@ -167,6 +167,8 @@ s$party[ s$partyname == "Independent" ] = "Ind" # unofficial
 s$party = toupper(s$party)
 
 s$county = gsub(" for |\\s$", "", s$county)
+s$county = gsub("\\s", "_", s$county)
+
 s$nyears = as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\1", s$seniority)) +
   as.numeric(as.numeric(gsub("(\\d+) år, (\\d+) dager", "\\2", s$seniority)) > 365 / 2)
 
