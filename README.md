@@ -36,7 +36,7 @@ Note -- Excluding minor parties like the Kystpartiet or the sole Green MP tends 
 - `nyears` -- seniority, from the sponsor's profile (see below)
 - `mandate` -- the last legislature in which the sponsor sat (see below)
 - `type` -- parliamentary status
-- `county` -- constituency
+- `constituency` -- constituency, stored as the string to its Wikipedia English entry
 - `photo` -- 0 or 1 if the photo URL returned a picture for the sponsor
 
 The `nyears` seniority variable counts all years up to the last legislature in which the sponsor has sat. The original variable also indicates days, but for simplicity, any amount of days superior to 365 / 2 is counted as one additional full year.
