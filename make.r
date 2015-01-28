@@ -20,5 +20,6 @@ gexf = TRUE # thematic graphs only
 
 source("data.r")  # scrape bills and sponsors
 source("build.r") # assemble the networks
+source("comm.r")  # add committee co-membership
 
 # have a nice day

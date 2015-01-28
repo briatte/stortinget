@@ -181,7 +181,8 @@ for(ii in unique(t)) {
   
 }
 
-save(list = ls(pattern = "^(net|edges|bills)_no\\d{4}$"), file = "data/net_no.rda")
+save(list = ls(pattern = "^(net|edges|bills)_no\\d{4}$"),
+     file = "data/net_no.rda")
 
 # zip gexf (only for themes)
 if(gexf)
