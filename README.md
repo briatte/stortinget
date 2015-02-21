@@ -44,3 +44,7 @@ The sponsors data have multiple entries for each sponsor (one per legislature in
 - `nyears` -- all years in which the sponsor sat, computed from `mandate`
 - `constituency` -- constituency, stored as the string to its Wikipedia English entry
 - `photo` -- 0 or 1 if the photo URL returned a picture for the sponsor
+
+# THANKS
+
+[Magnus Eide](https://twitter.com/magnuseide) helped with using [data.stortinget.no](http://data.stortinget.no/) properly.
