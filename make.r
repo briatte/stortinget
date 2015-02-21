@@ -14,7 +14,7 @@ dir.create("raw"    , showWarnings = FALSE)
 # parameters
 
 plot = TRUE
-gexf = TRUE # thematic graphs only
+gexf = TRUE
 
 # build routine
 

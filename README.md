@@ -11,21 +11,28 @@ The `data.r` script downloads information on bills and sponsors. Some sponsors d
 
 The `build.r` script then assembles the edge lists and plots the networks, with the help of a few routines coded into `functions.r`. Adjust the `plot`, `gexf` and `mode` parameters to skip the plots or to change the node placement algorithm.
 
-Note -- Excluding minor parties like the Kystpartiet or the sole Green MP tends to increase modularity by a maximum of 0.1. Most graphs are not affected by the exclusions (tested on both legislatures and thematic graphs).
+Note -- excluding minor parties (the Kystpartiet, Framtid for Finnmark, Rød Valgallianse and the sole Green MP from the Miljøpartiet De Grønne) tends to increase partisan modularity by a maximum of 0.01. Most graphs are not affected by the exclusions.
 
 # DATA
 
 ## Bills
 
-- `years` -- the year session of the bill (yyyy-yyyy)
-- `doc` -- the filename of the bill
-- `aut` -- bill sponsors, full text
-- `url` -- bill sponsors, semicolon-separated profile identifiers
-- `kwd` -- semicolon-separated keywords
+- `id` -- unique identifier
+- `session` -- the year session of the bill (yyyy-[yy]?yy)
+- `legislature` -- legislature of the bill, identified from `session`
+- `title` -- the title of the bill
+- `status` -- the status of the bill (processed or withdrawn)
+- `type` -- the type of the bill (general, budget or legislative)
+- `committee` -- the committee of introduction of the bill
+- `supervisors` -- the committee supervistors of the bill (semicolon-separated profile identifiers)
+- `authors` -- bill sponsors (semicolon-separated profile identifiers)
+- `keywords` -- semicolon-separated keywords
 - `n_au` -- total number of sponsors
-- `legislature` -- legislature of the bill, computed from `years`
-
+- `n_au` -- total number of committee supervisors
+ 
 ## Sponsors
+
+The sponsors data have multiple entries for each sponsor (one per legislature in which the sponsor sat).
 
 - `uid` -- profile URL, shortened to unique identifier (a few letters and sometimes "_")
 - `name` -- sponsor name
@@ -33,20 +40,7 @@ Note -- Excluding minor parties like the Kystpartiet or the sole Green MP tends 
 - `sex` -- sponsor gender (F/M)
 - `party` -- political party, abbreviated
 - `partyname` -- political party, full name (in Norwegian)
-- `nyears` -- seniority, from the sponsor's profile (see below)
-- `mandate` -- the last legislature in which the sponsor sat (see below)
-- `type` -- parliamentary status
+- `mandate` -- the legislature in which the sponsor sat
+- `nyears` -- all years in which the sponsor sat, computed from `mandate`
 - `constituency` -- constituency, stored as the string to its Wikipedia English entry
 - `photo` -- 0 or 1 if the photo URL returned a picture for the sponsor
-
-The `nyears` seniority variable counts all years up to the last legislature in which the sponsor has sat. The original variable also indicates days, but for simplicity, any amount of days superior to 365 / 2 is counted as one additional full year.
-
-Before this variable is added to a graph, it receives a penalty equal to the time that separates the last legislature in which the sponsor sat (stored in the `mandate` variable) from the legislature for which seniority is being computed.
-
-Consider, for instance, [MP "BB"](https://www.stortinget.no/no/Representanter-og-komiteer/Representantene/Representantfordeling/Representant/?perid=BB) (Berit Brørby) in the graph `net_no2001` for legislature 2001-2005:
-
-- last legislature: 2005-2009
-- legislature under consideration: 2001-2005
-- seniority: 24 years
-
-In this case, `nyears` will be equal to 24 - (2009-2005) = 20 years.
