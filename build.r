@@ -4,6 +4,9 @@ mode = "fruchtermanreingold"
 # order sponsors (in order to append the later ones)
 s = arrange(s, name, mandate)
 
+# remove government bills
+b = filter(b, n_au > 0)
+
 for(ii in rev(unique(b$legislature))) {
 
   cat("\n", ii)
