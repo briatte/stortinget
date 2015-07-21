@@ -1,7 +1,8 @@
 This repository contains code to build cosponsorship networks from bills passed in the [Norwegian Parliament](https://www.stortinget.no/).
 
-- [interactive demo](http://briatte.org/stortinget)
-- [static plots](http://briatte.org/stortinget/plots.html)
+- [interactive demo](http://f.briatte.org/parlviz/stortinget)
+- [static plots](http://f.briatte.org/parlviz/stortinget/plots.html)
+- [more countries](https://github.com/briatte/parlnet)
 
 # HOWTO
 
