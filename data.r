@@ -138,11 +138,15 @@ for(k in rev(m)) {
   file = paste0("raw/rep", k, ".html")
   file = gsub("Å", "_A", file) # special case, encoding issue
 
-  if(!file.exists(file))
-    download(paste0(root,
-                    "/no/Representanter-og-komiteer/Representantene/Representantfordeling/Representant/?perid=",
-                    gsub("Æ", "%C3%86", gsub("Å", "%C3%85", gsub("Ø", "%C3%98", k)))),
-             file, mode = "wb", quiet = TRUE)
+  if(!file.exists(file)) {
+    
+    h = paste0(root, "/no/Representanter-og-komiteer/Representantene/",
+               "Representantfordeling/Representant/", "?perid=",
+               gsub("Æ", "%C3%86", gsub("Å", "%C3%85", gsub("Ø", "%C3%98", k))))
+    h = GET(h)
+    writeLines(content(h, "text"), paste("GET", file))
+    
+  }
 
   h = htmlParse(file)
 

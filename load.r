@@ -6,11 +6,9 @@ library(XML)
 
 # networks
 
-library(igraph) # keep first
+library(rgexf) # keep first
 library(network)
 library(sna)
-library(rgexf)
-library(tnet)
 
 # plots
 
@@ -19,4 +17,4 @@ library(grid)
 
 # extras
 
-library(downloader) # to handle HTTPS links
+library(httr) # handle HTTPS requests
