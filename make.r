@@ -15,6 +15,8 @@ dir.create("raw"    , showWarnings = FALSE)
 
 plot = TRUE
 gexf = TRUE
+meta = c("Norway", "Storting")
+mode = "fruchtermanreingold"
 
 # build routine
 

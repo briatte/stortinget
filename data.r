@@ -17,7 +17,7 @@ if(!file.exists(bills)) {
   b = data.frame()
   for(i in h[ h != "2015-2016" ]) {
 
-    file = paste0("raw/bills", i, ".xml")
+    file = paste0("raw/bills/bills-", i, ".xml")
 
     if(!file.exists(file))
       download.file(paste0("http://data.stortinget.no/eksport/saker?sesjonId=", i), file,
@@ -135,7 +135,7 @@ cat("Scraping", length(m), "unique sponsors\n")
 s = data.frame()
 for(k in rev(m)) {
 
-  file = paste0("raw/rep", k, ".html")
+  file = paste0("raw/mps/mp-", k, ".html")
   file = gsub("Å", "_A", file) # special case, encoding issue
 
   if(!file.exists(file)) {
@@ -144,16 +144,17 @@ for(k in rev(m)) {
                "Representantfordeling/Representant/", "?perid=",
                gsub("Æ", "%C3%86", gsub("Å", "%C3%85", gsub("Ø", "%C3%98", k))))
     h = GET(h)
-    writeLines(content(h, "text"), paste("GET", file))
+    writeLines(content(h, "text"), file)
     
   }
 
+  cat(sprintf("%3.0f", which(m == k)), "Sponsor", k, "\n")
   h = htmlParse(file)
-
+  
   # panelized information
-  nfo = xpathSApply(h, "//h3[text()=' Stortingsperioder']/following-sibling::div[1]", xmlValue)
+  nfo = xpathSApply(h, "//h3[text()=' Stortingsperioder']/following-sibling::ul[1]", xmlValue)
   nfo = str_clean(unlist(strsplit(nfo, "\\.")))
-  nfo = nfo[ nfo != "" ]
+  nfo = nfo[ grepl("epresentant", nfo) ]
   county = gsub("(Varar|R)epresentant nr \\d+ for (.*),\\s?(.*),\\s?(.*)", "\\2", nfo)
   mandate = str_extract(nfo, "\\d{4} - \\d{4}")
   mandate = gsub("\\s", "", mandate)
@@ -162,16 +163,12 @@ for(k in rev(m)) {
   party = gsub("(.*),\\s?(.*),\\s?(.*)", "\\3", nfo)
 
   # panel-agnostic details
-  name = gsub("Biografi: ", "", xpathSApply(h, "//title", xmlValue))
-  born = xpathSApply(h, "//span[@id='ctl00_MainRegion_RepShortInfo_lblBirthDate']", xmlValue)
-  photo = xpathSApply(h, "//img[@id='ctl00_MainRegion_RepShortInfo_imgRepresentative']/@src")
-  sex = xpathSApply(h, "//div[@class='mainbody'][2]", xmlValue)
-  sex = ifelse(length(sex), str_extract(sex, "Datter|Sønn"), NA)
-  # type = xpathSApply(h, "//span[@id='ctl00_MainRegion_RepShortInfo_lblRepresentativeType']", xmlValue)
+  name = gsub("Biografi: ", "", xpathSApply(h, "//title[1]", xmlValue))
+  born = xpathSApply(h, "//span[@class='biography-header-years']", xmlValue)
+  photo = xpathSApply(h, "//img[@id='ctl00_ctl00_MainRegion_MainRegion_RepShortInfo_imgRepresentative']/@src")
 
-  cat("Sponsor", sprintf("%3.0f", which(m == k)), k, "\n")
-
-  s = rbind(s, data.frame(uid = k, name, born, sex, photo,
+  s = rbind(s, data.frame(uid = k, name, born = str_extract(born, "\\d+"),
+                          sex = NA, photo,
                           mandate, party, county, nyears,
                           stringsAsFactors = FALSE))
 
@@ -249,7 +246,7 @@ for(i in unique(s$photo)) {
   photo = gsub("%c3", "_", gsub("%85", "A", gsub("%98", "O", photo)))
 
   if(!file.exists(photo))
-    try(download(paste0(root, i), photo, mode = "wb", quiet = TRUE), silent = TRUE)
+    writeBin(content(GET(paste0(root, i)), "raw"), photo)
 
   if(!file.info(photo)$size | grepl("Default", photo)) {
 

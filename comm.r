@@ -6,11 +6,13 @@ raw = data.frame()
 # find unique committees
 
 # remove check below due to inconsistencies between UIDs and URL identifiers (special characters)
-# stopifnot(s$uid %in% gsub("raw/rep|\\.html$", "", dir("raw", pattern = "rep\\w+\\.html$", full.names = TRUE)))
-for(i in dir("raw", pattern = "rep\\w+\\.html$", full.names = TRUE)) {
+# stopifnot(s$uid %in% gsub("raw/mps/mp-|\\.html$", "",
+#                           list.files("raw/mps", full.names = TRUE)))
+
+for(i in list.files("raw/mps", full.names = TRUE)) {
 
   h = htmlParse(i, encoding = "UTF-8")
-  r = xpathSApply(h, "//div[@id='ctl00_MainRegion_RepresentativeInfoContainer_BiographyContent_RepresentativeMemberships1_ctl01_GroupMembershipItem1_MembershipGroup']", xmlValue)
+  r = xpathSApply(h, "//div[@id='ctl00_ctl00_MainRegion_MainRegion_RepresentativeInfoContainer_BiographyContent_RepresentativeMemberships1_ctl05_GroupMembershipItem1_MembershipGroup']", xmlValue)
   r = str_clean(r)
   l = unlist(strsplit(r, "\\d{4}-\\d{2,4}"))
   l = l[ l!= "" ]
@@ -24,6 +26,7 @@ for(i in dir("raw", pattern = "rep\\w+\\.html$", full.names = TRUE)) {
 
 }
 
+
 raw = filter(raw, !is.na(y))
 comm = data.frame()
 
@@ -36,6 +39,20 @@ for(i in 1:nrow(raw)) {
   l = l[ grepl("komit", l) ]
   if(length(l))
     comm = rbind(comm, data.frame(i = raw$i[ i ], y = raw$y[ i ], l, stringsAsFactors = FALSE))
+
+}
+
+# new biography format for 2013-2017
+# str_clean(xpathSApply(h, "//div[contains(@class, 'biography-affiliation')]//a[contains(@href, 'Komiteene')]/../following-sibling::p", xmlValue))
+for(i in list.files("raw/mps", full.names = TRUE)) {
+  
+  h = htmlParse(i, encoding = "UTF-8")
+  
+  j = xpathSApply(h, "//div[contains(@class, 'biography-affiliation')]//a[contains(@href, 'Komiteene')]", 
+                  xmlValue)
+  
+  if(length(j))
+    comm = rbind(comm, data.frame(i, y = "2013-2017", l = zz, stringsAsFactors = FALSE))
 
 }
 
@@ -53,12 +70,12 @@ comm = unique(raw[, c("y", "l") ])
 comm$u = paste(comm$y, comm$l)
 
 # add sponsor columns
-for(i in dir("raw", pattern = "rep\\w+\\.html$", full.names = TRUE))
-  comm[, gsub("raw/rep|\\.html", "", i) ] = 0
+for(i in list.files("raw/mps", full.names = TRUE))
+  comm[, gsub("raw/mps/mp-|\\.html", "", i) ] = 0
 
 for(i in 1:nrow(comm)) {
 
-  l = gsub("raw/rep|\\.html", "", raw$i[ raw$u == comm$u[i] ])
+  l = gsub("raw/mps/mp-|\\.html", "", raw$i[ raw$u == comm$u[i] ])
   comm[ i, colnames(comm) %in% l ] = 1
 
 }
@@ -75,7 +92,7 @@ for(i in ls(pattern = "^net_no")) {
   n = get(i)
   sp = network.vertex.names(n)
   names(sp) = n %v% "url"
-
+  
   m = filter(comm, y == gsub("\\D", "", i))
   m = m[ , names(m) %in% names(sp) ]
   cat(":", nrow(m), "committees", ncol(m), "MPs")

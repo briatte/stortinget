@@ -1,6 +1,3 @@
-meta = c("Norway", "Storting")
-mode = "fruchtermanreingold"
-
 # order sponsors (in order to append the later ones)
 s = arrange(s, name, mandate)
 
