@@ -15,6 +15,21 @@ colors = c(
   "IND" = "#AAAAAA"  #     - Independent               -- light grey
 )
 
+groups = c(
+  "RV" = "Rød Valgallianse", # 1993-1997, dissolved 2007; n = 1
+  "SV" = "Sosialistisk Venstreparti",
+  "MDG" = "Miljøpartiet De Grønne", # n = 1
+  "A" = "Arbeiderpartiet", # Ap
+  "SP" = "Senterpartiet",
+  "V" = "Venstre",
+  "KRF" = "Kristelig Folkeparti",
+  "KP" = "Kystpartiet", # also TF
+  "H" = "Høyre",
+  "FRP" = "Fremskrittspartiet",
+  "FFF" = "Framtid for Finnmark", # 1989, n = 1
+  "IND" = "independent"
+)
+
 # ParlGov Left/Right scores
 
 scores = c(
@@ -36,5 +51,5 @@ scores = c(
   "IND" = Inf
 )
 
+stopifnot(names(colors) == names(groups))
 stopifnot(names(colors) == names(scores))
-order = names(colors)[ order(scores) ]

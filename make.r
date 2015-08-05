@@ -15,8 +15,15 @@ dir.create("raw"    , showWarnings = FALSE)
 
 plot = TRUE
 gexf = TRUE
-meta = c("Norway", "Storting")
 mode = "fruchtermanreingold"
+meta = c(
+  "cty" = "Norway",
+  "lang" = "no", # Wikipedia language for chamber and constituencies
+  "ch" = "Stortinget",
+  "type" = "Unicameral",
+  "ipu" = 2239,
+  "seats" = 169
+)
 
 # build routine
 
