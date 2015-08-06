@@ -1,7 +1,6 @@
 # add committee co-memberships
 
-load("data/net_no.rda")
-raw = data.frame()
+raw = data_frame()
 
 # find unique committees
 
@@ -131,6 +130,3 @@ for (i in ls(pattern = "^net_no")) {
   assign(paste0("co", i), nn)
 
 }
-
-save(list = ls(pattern = "^((co)?net|edges|bills)_no\\d{4}$"),
-     file = "data/net_no.rda")
