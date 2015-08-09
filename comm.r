@@ -27,7 +27,7 @@ for (i in list.files("raw/mps", full.names = TRUE)) {
 
 
 raw = filter(raw, !is.na(y))
-comm = data.frame()
+comm = data_frame()
 
 for (i in 1:nrow(raw)) {
 
@@ -37,7 +37,7 @@ for (i in 1:nrow(raw)) {
   l = gsub("(.*), (.*)", "\\2", l)
   l = l[ grepl("komit", l) ]
   if (length(l))
-    comm = rbind(comm, data.frame(i = raw$i[ i ], y = raw$y[ i ], l, stringsAsFactors = FALSE))
+    comm = rbind(comm, data.frame(i = raw$i[ i ], y = raw$y[ i ], l))
 
 }
 
@@ -51,7 +51,7 @@ for (i in list.files("raw/mps", full.names = TRUE)) {
                   xmlValue)
   
   if (length(j))
-    comm = rbind(comm, data.frame(i, y = "2013-2017", l = j, stringsAsFactors = FALSE))
+    comm = rbind(comm, data_frame(i, y = "2013-2017", l = j))
 
 }
 
