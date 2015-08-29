@@ -117,12 +117,12 @@ for (i in ls(pattern = "^net_no")) {
       sum(e$committee > 1), "> 1\n")
 
   nn = network(e[, 1:2], directed = FALSE)
-  nn %e% "committee" = e$committee
+  set.edge.attribute(nn, "committee", e$committee)
 
   print(table(nn %e% "committee", exclude = NULL))
   stopifnot(network.size(n) == network.size(nn))
 
-  n %e% "committee" = e$committee
+  set.edge.attribute(n, "committee", e$committee)
   assign(i, n)
 
   nn %n% "committees" = as.table(rowSums(M))
