@@ -1,13 +1,12 @@
 root = "https://www.stortinget.no"
-sponsors = "data/representanter.csv"
+sponsors = "data/sponsors.csv"
 bills = "data/bills.csv"
 
 if (!file.exists(bills)) {
 
-  # legislatures
   # http://data.stortinget.no/eksport/stortingsperioder
-  # 2013-2017 (only 2013-2014 and 2014-2015, n = 833), 2009-2013, 2005-2009,
-  # 2001-2005, 1997-2001, 1993-97, 1989-93, 1985-89 (missing 1985-86, n > 1000)
+  # legislatures: 2013-2017 (missing 2016-17), 2009-2013, 2005-2009, 2001-2005,
+  # 1997-2001, 1993-97, 1989-93, 1985-89 (missing 1985-86, n > 1000)
 
   # sessions
   h = htmlParse("http://data.stortinget.no/eksport/sesjoner")
@@ -15,7 +14,7 @@ if (!file.exists(bills)) {
 
   # scrape ~ 43 MB of open data (excluding empty current session)
   b = data.frame()
-  for (i in h[ h != "2015-2016" ]) {
+  for (i in h[ h != "2016-2017" ]) {
 
     file = paste0("raw/bills/bills-", i, ".xml")
 
@@ -105,7 +104,7 @@ if (!file.exists(bills)) {
 
   # legislatures
   b$legislature = NA
-  b$legislature[ b$session %in% c("2013-2014", "2014-2015") ] = "2013-2017" # "2015-2016", "2016-2017"
+  b$legislature[ b$session %in% c("2013-2014", "2014-2015", "2015-2016") ] = "2013-2017" # "2016-2017"
   b$legislature[ b$session %in% c("2009-2010", "2010-2011", "2011-2012", "2012-2013") ] = "2009-2013"
   b$legislature[ b$session %in% c("2005-2006", "2006-2007", "2007-2008", "2008-2009") ] = "2005-2009"
   b$legislature[ b$session %in% c("2001-2002", "2002-2003", "2003-2004", "2004-2005") ] = "2001-2005"
